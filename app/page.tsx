@@ -26,7 +26,7 @@ export default function Page() {
             A visually striking dissolve effect applied to a 3D text GLB model using custom shaders and Three.js. 
             The effect features animated particles and smooth transitions, demonstrating advanced material and geometry manipulation.
           </p>
-          <a href="https://github.com/JatinChopra/emissive-dissolve-effect" className="text-white text-sm">GitHub</a>
+          <a href="https://github.com/aura195/AURA-3D-Effect" className="text-white text-sm">GitHub</a>
         </div>
       </div>
     </>
