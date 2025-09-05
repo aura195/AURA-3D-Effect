@@ -8,6 +8,7 @@ export async function start(canvas: HTMLCanvasElement) {
   const scene = new THREE.Scene();
   const cam = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.001, 100);
   cam.position.set(0, 3, 0);
+  cam.rotation.set(Math.PI/2, 0, 0);
   const blackColor = new THREE.Color(0x000000);
   scene.background = blackColor;
 
@@ -51,10 +52,22 @@ export async function start(canvas: HTMLCanvasElement) {
     '/cubeMap2/posx.png','/cubeMap2/negx.png','/cubeMap2/posy.png','/cubeMap2/negy.png','/cubeMap2/posz.png','/cubeMap2/negz.png',
   ];
 
+  let skybox: THREE.Mesh;
+  
   async function loadTextures() {
     const cubeTextureLoader = new THREE.CubeTextureLoader();
     cubeTexture = await cubeTextureLoader.loadAsync(cubeTextureUrls);
-    scene.background = cubeTexture;
+    
+    // Create skybox mesh for rotatable environment
+    const skyboxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
+    const skyboxMat = new THREE.MeshBasicMaterial({
+      envMap: cubeTexture,
+      side: THREE.BackSide
+    });
+    skybox = new THREE.Mesh(skyboxGeo, skyboxMat);
+    scene.add(skybox);
+    
+    // Use cube texture for environment reflections
     scene.environment = cubeTexture;
     cubeCamera.update(re, scene);
     document.body.classList.remove('loading');
@@ -108,7 +121,7 @@ export async function start(canvas: HTMLCanvasElement) {
     uEdgeColor: { value: new THREE.Color(0x4d9bff) },
     uFreq: { value: 0.5 },
     uAmp: { value: 5 },
-    uProgress: { value: 4 },
+    uProgress: { value: 0 },
     uEdge: { value: 2.5 },
   } as const;
 
@@ -273,9 +286,10 @@ export async function start(canvas: HTMLCanvasElement) {
     // const tweaks: any = (window as any).__dissolveTweaks;
     // console.log(`tweaks:`, tweaks);
     // if (tweaks?.autoDissolve) {
+    // console.log(`progress.value:`, progress.value);
       if (dissolving) progress.value += 0.08; else progress.value -= 0.08;
-      if (progress.value > 14 && dissolving) dissolving = false;
-      if (progress.value < -17 && !dissolving) dissolving = true;
+      if (progress.value > 8 && dissolving) dissolving = false;
+      if (progress.value < -7 && !dissolving) dissolving = true;
     // }
   }
 
@@ -287,11 +301,15 @@ export async function start(canvas: HTMLCanvasElement) {
     if (mixer) mixer.update(delta);
     updateParticleAttriutes();
     animateDissolve();
+    
     if (resizeRendererToDisplaySize()) {
       const c = re.domElement; cam.aspect = c.clientWidth / c.clientHeight; cam.updateProjectionMatrix();
     }
-    scene.background = blackColor; effectComposer1.render();
-    scene.background = cubeTexture; effectComposer2.render();
+    // scene.background = blackColor;
+    effectComposer1.render();
+    // scene.background = blackColor;
+    // scene.background = cubeTexture; 
+    effectComposer2.render();
     rafId = requestAnimationFrame(animate);
   }
   rafId = requestAnimationFrame(animate);
